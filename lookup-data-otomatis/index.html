@@ -82,9 +82,9 @@
 
     <!-- TAILWIND MODAL (Pop-up Detail Per Toko) -->
     <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             <!-- Header Modal -->
-            <div class="flex justify-between items-center p-5 bg-blue-700 text-white">
+            <div class="flex justify-between items-center p-5 bg-blue-800 text-white">
                 <h5 class="font-bold text-xl">Rincian Per Toko Gramedia</h5>
                 <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-3xl leading-none">&times;</button>
             </div>
@@ -101,13 +101,14 @@
                     </div>
                 </div>
 
-                <!-- Tabel Detail -->
-                <div class="overflow-x-auto border rounded-lg">
+                <!-- Tabel Detail Gabungan -->
+                <div class="overflow-x-auto border rounded-lg shadow-sm">
                     <table class="min-w-full bg-white text-sm text-center">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
                             <tr>
                                 <th class="py-3 px-4 text-left">Nama Toko</th>
-                                <th id="detailTypeHeader" class="py-3 px-4">Jumlah</th>
+                                <th class="py-3 px-4 border-l">SOLD (Terjual)</th>
+                                <th class="py-3 px-4 border-l">EOH (Stok)</th>
                             </tr>
                         </thead>
                         <tbody id="detailBody" class="divide-y">
@@ -153,15 +154,11 @@
         const parseNum = (val) => {
             if (!val) return 0;
             let s = String(val).trim();
-            // 1. Amankan tanda kurung minus akuntansi
             if (s.startsWith('(') && s.endsWith(')')) {
                 s = '-' + s.slice(1, -1);
             }
-            // 2. Buang ".00" atau ",00" mutlak di akhir string
             s = s.replace(/[,.]00$/, '');
-            // 3. Buang semua sisa titik atau koma (sebagai pemisah ribuan)
             s = s.replace(/[,.]/g, '');
-            // 4. Jadikan angka Integer absolut
             return Math.abs(parseInt(s, 10) || 0);
         };
 
@@ -427,7 +424,7 @@
         }
 
         // ==========================================
-        // RENDER PREVIEW (DENGAN TOMBOL DETAIL)
+        // RENDER PREVIEW (DENGAN TOMBOL DETAIL GABUNGAN)
         // ==========================================
         function renderPreview(dataArray) {
             if (dataArray.length === 0) return;
@@ -453,24 +450,25 @@
                 headers.forEach(header => {
                     let val = dataArray[i][header] !== undefined ? dataArray[i][header] : '';
                     
-                    // Ambil properti pendukung untuk dikirim ke fungsi Modal Detail
                     let idOrin = escapeAttr(dataArray[i]['ID ORIN'] || '-');
                     let kodeBsoft = escapeAttr(dataArray[i]['KODE BSOFT'] || '-');
                     let judulItem = escapeAttr(dataArray[i]['JUDUL ITEM'] || '-');
                     let harga = escapeAttr(dataArray[i]['HARGA'] || '-');
 
-                    if (header === 'SOLD (TERJUAL BULAN INI)' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
+                    // Format khusus tebal untuk angka SOLD & EOH
+                    if (header === 'SOLD (TERJUAL BULAN INI)' || header === 'EOH (STOK AKHIR GRAMEDIA)') {
+                        rowHtml += `<td class="py-3 px-4 border font-bold text-center text-gray-800">${val}</td>`;
+                    }
+                    // Tempatkan tombol "Lihat Detail" di kolom STATUS SYSTEM jika MATCHED
+                    else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
                         rowHtml += `<td class="py-3 px-4 border font-bold text-center">
-                            ${val}<br>
-                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}', 'SOLD')" class="mt-2 text-[11px] bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded font-semibold border border-blue-300 transition">Lihat Detail SOLD</button>
+                            <span class="text-green-600">${val}</span><br>
+                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}')" class="mt-2 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button>
                         </td>`;
                     } 
-                    else if (header === 'EOH (STOK AKHIR GRAMEDIA)' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
-                        rowHtml += `<td class="py-3 px-4 border font-bold text-center">
-                            ${val}<br>
-                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}', 'EOH')" class="mt-2 text-[11px] bg-green-100 hover:bg-green-200 text-green-800 py-1 px-2 rounded font-semibold border border-green-300 transition">Lihat Detail EOH</button>
-                        </td>`;
-                    } 
+                    else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] !== '✅ MATCHED') {
+                        rowHtml += `<td class="py-3 px-4 border font-bold text-center text-red-600">${val}</td>`;
+                    }
                     else {
                         rowHtml += `<td class="py-2 px-4 border">${val}</td>`;
                     }
@@ -481,22 +479,30 @@
         }
 
         // ==========================================
-        // LOGIKA MODAL POP-UP & EXPORT DETAIL
+        // LOGIKA MODAL POP-UP GABUNGAN & EXPORT DETAIL
         // ==========================================
-        function lihatDetail(idOrin, kodeBsoft, judulItem, harga, type) {
-            // Pasang metadata buku di atas Modal
+        function lihatDetail(idOrin, kodeBsoft, judulItem, harga) {
             document.getElementById('mdl-id').innerText = idOrin;
             document.getElementById('mdl-kode').innerText = kodeBsoft;
             document.getElementById('mdl-judul').innerText = judulItem;
             document.getElementById('mdl-harga').innerText = harga;
-            document.getElementById('detailTypeHeader').innerText = `Jumlah ${type}`;
             
             const tbody = document.getElementById('detailBody');
             tbody.innerHTML = "";
 
-            // Reset dan set nama file untuk Export Detail
+            // 1. Buat Format Tanggal: DDMMYYYY
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const dateStr = dd + mm + yyyy;
+
+            // 2. Buat Format Judul Bersih (Hilangkan karakter aneh, spasi jadi strip)
+            const safeJudul = judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase();
+
+            // 3. Gabungkan jadi nama file final
             currentDetailData = [];
-            currentDetailFileName = `Detail_${type}_${idOrin}.xlsx`;
+            currentDetailFileName = `Detail_Toko_${dateStr}_${safeJudul}.xlsx`;
 
             // Filter toko berdasarkan ID
             const stores = dataStore.filter(row => cleanStr(row[1]) === cleanStr(idOrin));
@@ -507,32 +513,32 @@
                 const valSold = parseNum(store[7]); 
                 const valEoh = parseNum(store[11]); 
                 
-                const valueToShow = (type === 'SOLD') ? valSold : valEoh;
-
-                if (valueToShow > 0) {
+                // Tampilkan hanya jika ada buku yang terjual ATAU ada stoknya di toko tersebut
+                if (valSold > 0 || valEoh > 0) {
                     hasData = true;
-                    const textColor = type === 'SOLD' ? 'text-blue-600' : 'text-green-600';
+                    
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50">
                             <td class="py-2 px-4 text-left border-b">${namaToko}</td>
-                            <td class="py-2 px-4 font-bold border-b ${textColor}">${valueToShow}</td>
+                            <td class="py-2 px-4 font-bold border-b border-l text-blue-600">${valSold}</td>
+                            <td class="py-2 px-4 font-bold border-b border-l text-green-600">${valEoh}</td>
                         </tr>
                     `;
 
-                    // Masukkan ke array Export Detail Modal
                     currentDetailData.push({
                         'ID ORIN': idOrin,
                         'KODE BSOFT': kodeBsoft,
                         'JUDUL ITEM': judulItem,
                         'HARGA': harga,
                         'NAMA TOKO': namaToko,
-                        [`JUMLAH ${type}`]: valueToShow
+                        'SOLD (TERJUAL)': valSold,
+                        'EOH (STOK AKHIR)': valEoh
                     });
                 }
             });
 
             if (!hasData) {
-                tbody.innerHTML = `<tr><td colspan="2" class="py-6 text-gray-500 italic text-center">Tidak ada riwayat ${type} di semua toko.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="py-6 text-gray-500 italic text-center">Tidak ada riwayat SOLD maupun EOH di semua toko.</td></tr>`;
             }
 
             document.getElementById('detailModal').classList.remove('hidden');
