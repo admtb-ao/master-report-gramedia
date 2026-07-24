@@ -824,7 +824,12 @@ loading.style.display="none";
 
 frame.style.display="block";
 
-actions.style.display="flex";
+/* Sembunyikan actions bar jika url berisi '#' */
+if(editUrl === '#' || downloadUrl === '#') {
+    actions.style.display="none";
+} else {
+    actions.style.display="flex";
+}
 
 };
 
