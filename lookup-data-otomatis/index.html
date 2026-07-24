@@ -82,15 +82,26 @@
 
     <!-- TAILWIND MODAL (Pop-up Detail Per Toko) -->
     <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
             <!-- Header Modal -->
             <div class="flex justify-between items-center p-5 bg-blue-700 text-white">
                 <h5 class="font-bold text-xl">Rincian Per Toko Gramedia</h5>
                 <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-3xl leading-none">&times;</button>
             </div>
+            
             <!-- Body Modal -->
             <div class="p-6 overflow-y-auto">
-                <h6 id="detailBookTitle" class="font-bold text-center mb-5 text-gray-800 text-lg"></h6>
+                <!-- Info Buku -->
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-5 text-sm text-left">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div><span class="font-semibold text-gray-600">ID ORIN:</span> <span id="mdl-id" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div><span class="font-semibold text-gray-600">KODE BSOFT:</span> <span id="mdl-kode" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div class="md:col-span-2"><span class="font-semibold text-gray-600">JUDUL ITEM:</span> <span id="mdl-judul" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div class="md:col-span-2"><span class="font-semibold text-gray-600">HARGA:</span> <span id="mdl-harga" class="font-bold text-gray-800 ml-1"></span></div>
+                    </div>
+                </div>
+
+                <!-- Tabel Detail -->
                 <div class="overflow-x-auto border rounded-lg">
                     <table class="min-w-full bg-white text-sm text-center">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
@@ -105,20 +116,28 @@
                     </table>
                 </div>
             </div>
+
             <!-- Footer Modal -->
-            <div class="p-4 border-t bg-gray-50 text-right">
+            <div class="p-4 border-t bg-gray-50 flex justify-between items-center">
+                <button onclick="exportDetailToExcel()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2">
+                    📥 Export Detail Excel
+                </button>
                 <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition">Tutup</button>
             </div>
         </div>
     </div>
 
     <script>
-        let database = [];     // GSheet 1: Data Utama
-        let dataStore = [];    // GSheet 2: Data Per Store
-        let processedData = []; // Data Hasil Olahan untuk Export/Preview
+        let database = [];     
+        let dataStore = [];    
+        let processedData = []; 
+        
+        // Array global untuk export khusus data dari Modal
+        let currentDetailData = []; 
+        let currentDetailFileName = "Detail_Toko.xlsx";
 
         // URL Google Sheet 1 (Utama)
-        const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNkfOExIiFvmh8K-hNkM';
+        const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNKfOExliFvmh8k-hNkM';
         const gidMain = '1020016179';
         const csvUrlMain = `https://docs.google.com/spreadsheets/d/${sheetIdMain}/export?format=csv&gid=${gidMain}`;
 
@@ -127,17 +146,23 @@
         const gidStore = '84159564';
         const csvUrlStore = `https://docs.google.com/spreadsheets/d/${sheetIdStore}/export?format=csv&gid=${gidStore}`;
 
-        // Utility: Membersihkan string (Bypass Text vs Number ignore issue)
+        // Utility: Membersihkan string 
         const cleanStr = (str) => str ? String(str).trim().toLowerCase() : "";
 
-        // Utility: Convert tanda kurung jadi angka minus lalu di-absolute
+        // Utility: Parser Angka Super Aman (Anti Imbuhan "00" akibat format Rupiah/Desimal)
         const parseNum = (val) => {
             if (!val) return 0;
-            let s = String(val).replace(/,/g, '').trim();
+            let s = String(val).trim();
+            // 1. Amankan tanda kurung minus akuntansi
             if (s.startsWith('(') && s.endsWith(')')) {
                 s = '-' + s.slice(1, -1);
             }
-            return Math.abs(parseFloat(s) || 0);
+            // 2. Buang ".00" atau ",00" mutlak di akhir string
+            s = s.replace(/[,.]00$/, '');
+            // 3. Buang semua sisa titik atau koma (sebagai pemisah ribuan)
+            s = s.replace(/[,.]/g, '');
+            // 4. Jadikan angka Integer absolut
+            return Math.abs(parseInt(s, 10) || 0);
         };
 
         // Utility: Escape text for HTML attributes
@@ -154,7 +179,6 @@
                 const csvMainText = await resMain.text();
                 const csvStoreText = await resStore.text();
 
-                // Parsing Sheet 1 (Utama)
                 Papa.parse(csvMainText, {
                     header: true,
                     skipEmptyLines: true,
@@ -169,17 +193,14 @@
                     }
                 });
 
-                // Parsing Sheet 2 (Per Store)
                 Papa.parse(csvStoreText, {
                     header: false,
                     skipEmptyLines: true,
                     complete: function(results) {
-                        // Potong array (slice) mulai dari baris 10 (index 9) agar metadata terbuang
                         dataStore = results.data.slice(9);
                     }
                 });
 
-                // Aktifkan Input dan Tombol
                 document.getElementById('db-status').innerHTML = `✅ Terhubung! (${database.length} data utama & ${dataStore.length} riwayat toko siap digunakan)`;
                 document.getElementById('db-status').className = "text-green-600 font-bold";
                 
@@ -191,7 +212,7 @@
                 searchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
 
             } catch(e) {
-                document.getElementById('db-status').innerHTML = `❌ Gagal memuat data.`;
+                document.getElementById('db-status').innerHTML = `❌ Gagal memuat data. Pastikan Sheet Anda tidak diprivate (Anyone with the link).`;
                 document.getElementById('db-status').className = "text-red-600 font-bold";
                 console.error(e);
             }
@@ -203,8 +224,8 @@
             let totalSold = 0;
             let totalEoh = 0;
             stores.forEach(st => {
-                totalSold += parseNum(st[7]);  // Index 7 = Kolom H (SOLD)
-                totalEoh += parseNum(st[11]); // Index 11 = Kolom L (EOH)
+                totalSold += parseNum(st[7]);  
+                totalEoh += parseNum(st[11]); 
             });
             return { totalSold, totalEoh };
         }
@@ -240,9 +261,7 @@
 
             if (matches.length > 0) {
                 processedData = matches.map(match => {
-                    // Kalkulasi Total Real-Time
                     const { totalSold, totalEoh } = calcStoreData(match['ID ORIN']);
-
                     return {
                         'ID ORIN': match['ID ORIN'] || '',
                         'KODE BSOFT': match['KODE BSOFT'] || '',
@@ -375,8 +394,6 @@
                     if (match) {
                         const finalId = match['ID ORIN'] || row['ID ORIN'] || row['Item Id'] || '';
                         const finalJudul = match['JUDUL ITEM'] || row['JUDUL ITEM'] || row['judul'] || row['Judul'] || '';
-                        
-                        // Kalkulasi Total Real-Time
                         const { totalSold, totalEoh } = calcStoreData(finalId);
 
                         return {
@@ -410,7 +427,7 @@
         }
 
         // ==========================================
-        // RENDER PREVIEW (DENGAN TOMBOL DETAIL) & EXPORT
+        // RENDER PREVIEW (DENGAN TOMBOL DETAIL)
         // ==========================================
         function renderPreview(dataArray) {
             if (dataArray.length === 0) return;
@@ -429,26 +446,29 @@
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
 
-            const limit = Math.min(dataArray.length, 50); // Maksimal preview 50 baris
+            const limit = Math.min(dataArray.length, 50); 
             for (let i = 0; i < limit; i++) {
                 let rowHtml = '<tr class="hover:bg-gray-50 border-b">';
                 
                 headers.forEach(header => {
                     let val = dataArray[i][header] !== undefined ? dataArray[i][header] : '';
-                    let idOrin = escapeAttr(dataArray[i]['ID ORIN'] || '');
-                    let judulItem = escapeAttr(dataArray[i]['JUDUL ITEM'] || '');
+                    
+                    // Ambil properti pendukung untuk dikirim ke fungsi Modal Detail
+                    let idOrin = escapeAttr(dataArray[i]['ID ORIN'] || '-');
+                    let kodeBsoft = escapeAttr(dataArray[i]['KODE BSOFT'] || '-');
+                    let judulItem = escapeAttr(dataArray[i]['JUDUL ITEM'] || '-');
+                    let harga = escapeAttr(dataArray[i]['HARGA'] || '-');
 
-                    // INJEKSI TOMBOL MODAL HANYA DI TAMPILAN PREVIEW
                     if (header === 'SOLD (TERJUAL BULAN INI)' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
                         rowHtml += `<td class="py-3 px-4 border font-bold text-center">
                             ${val}<br>
-                            <button onclick="lihatDetail('${idOrin}', 'SOLD', '${judulItem}')" class="mt-2 text-[11px] bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded font-semibold border border-blue-300 transition">Lihat Detail SOLD</button>
+                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}', 'SOLD')" class="mt-2 text-[11px] bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded font-semibold border border-blue-300 transition">Lihat Detail SOLD</button>
                         </td>`;
                     } 
                     else if (header === 'EOH (STOK AKHIR GRAMEDIA)' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
                         rowHtml += `<td class="py-3 px-4 border font-bold text-center">
                             ${val}<br>
-                            <button onclick="lihatDetail('${idOrin}', 'EOH', '${judulItem}')" class="mt-2 text-[11px] bg-green-100 hover:bg-green-200 text-green-800 py-1 px-2 rounded font-semibold border border-green-300 transition">Lihat Detail EOH</button>
+                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}', 'EOH')" class="mt-2 text-[11px] bg-green-100 hover:bg-green-200 text-green-800 py-1 px-2 rounded font-semibold border border-green-300 transition">Lihat Detail EOH</button>
                         </td>`;
                     } 
                     else {
@@ -461,14 +481,22 @@
         }
 
         // ==========================================
-        // LOGIKA MODAL POP-UP (TAILWIND)
+        // LOGIKA MODAL POP-UP & EXPORT DETAIL
         // ==========================================
-        function lihatDetail(idOrin, type, judul) {
-            document.getElementById('detailBookTitle').innerText = judul;
+        function lihatDetail(idOrin, kodeBsoft, judulItem, harga, type) {
+            // Pasang metadata buku di atas Modal
+            document.getElementById('mdl-id').innerText = idOrin;
+            document.getElementById('mdl-kode').innerText = kodeBsoft;
+            document.getElementById('mdl-judul').innerText = judulItem;
+            document.getElementById('mdl-harga').innerText = harga;
             document.getElementById('detailTypeHeader').innerText = `Jumlah ${type}`;
             
             const tbody = document.getElementById('detailBody');
             tbody.innerHTML = "";
+
+            // Reset dan set nama file untuk Export Detail
+            currentDetailData = [];
+            currentDetailFileName = `Detail_${type}_${idOrin}.xlsx`;
 
             // Filter toko berdasarkan ID
             const stores = dataStore.filter(row => cleanStr(row[1]) === cleanStr(idOrin));
@@ -481,7 +509,6 @@
                 
                 const valueToShow = (type === 'SOLD') ? valSold : valEoh;
 
-                // Tampilkan yang ada isinya saja biar rapi
                 if (valueToShow > 0) {
                     hasData = true;
                     const textColor = type === 'SOLD' ? 'text-blue-600' : 'text-green-600';
@@ -491,14 +518,23 @@
                             <td class="py-2 px-4 font-bold border-b ${textColor}">${valueToShow}</td>
                         </tr>
                     `;
+
+                    // Masukkan ke array Export Detail Modal
+                    currentDetailData.push({
+                        'ID ORIN': idOrin,
+                        'KODE BSOFT': kodeBsoft,
+                        'JUDUL ITEM': judulItem,
+                        'HARGA': harga,
+                        'NAMA TOKO': namaToko,
+                        [`JUMLAH ${type}`]: valueToShow
+                    });
                 }
             });
 
             if (!hasData) {
-                tbody.innerHTML = `<tr><td colspan="2" class="py-6 text-gray-500 italic">Tidak ada riwayat ${type} di semua toko.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="2" class="py-6 text-gray-500 italic text-center">Tidak ada riwayat ${type} di semua toko.</td></tr>`;
             }
 
-            // Tampilkan Modal
             document.getElementById('detailModal').classList.remove('hidden');
         }
 
@@ -507,18 +543,25 @@
         }
 
         // ==========================================
-        // EXPORT TO EXCEL
+        // FUNGSI EXPORT TO EXCEL UTAMA & DETAIL
         // ==========================================
         function exportToExcel() {
             if (!processedData || processedData.length === 0) return;
-            
-            // Catatan: Karena tombol "Detail" hanya disuntikkan via HTML di renderPreview,
-            // Data JSON (processedData) tetap BERSIH berupa angka murni saat di-export.
             const worksheet = XLSX.utils.json_to_sheet(processedData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Data_Hasil_Lookup");
-            
             XLSX.writeFile(workbook, "Data_Lengkap_AutoLookup.xlsx");
+        }
+
+        function exportDetailToExcel() {
+            if (currentDetailData.length === 0) {
+                alert("Tidak ada rincian data untuk di-export.");
+                return;
+            }
+            const worksheet = XLSX.utils.json_to_sheet(currentDetailData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rincian_Toko");
+            XLSX.writeFile(workbook, currentDetailFileName);
         }
     </script>
 </body>
