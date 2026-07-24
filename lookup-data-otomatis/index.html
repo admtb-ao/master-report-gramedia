@@ -23,7 +23,7 @@
 
     <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
-        <p class="text-gray-600 mb-6">Cari data manual (berdasarkan ID atau Judul Buku) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel.</p>
+        <p class="text-gray-600 mb-6">Cari data manual (berdasarkan ID atau Judul) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel.</p>
 
         <!-- Status Database -->
         <div class="mb-6 p-4 rounded bg-gray-50 border">
@@ -137,7 +137,6 @@
                 return;
             }
 
-            // Cari semua data di database yang cocok (bisa ID persis, atau Judul yang mengandung kata kunci)
             const matches = database.filter(dbRow => {
                 const dbOrin = String(dbRow['ID ORIN'] || '').trim().toLowerCase();
                 const dbBsoft = String(dbRow['KODE BSOFT'] || '').trim().toLowerCase();
@@ -147,12 +146,13 @@
             });
 
             if (matches.length > 0) {
-                // Format hasil pencarian untuk ditampilkan
                 processedData = matches.map(match => ({
                     'ID ORIN': match['ID ORIN'] || '',
                     'KODE BSOFT': match['KODE BSOFT'] || '',
                     'JUDUL ITEM': match['JUDUL ITEM'] || '',
                     'HARGA': match['HARGA'] !== undefined ? match['HARGA'] : '',
+                    'SOLD (TERJUAL BULAN INI)': match['SOLD (TERJUAL BULAN INI)'] !== undefined ? match['SOLD (TERJUAL BULAN INI)'] : '',
+                    'EOH (STOK AKHIR GRAMEDIA)': match['EOH (STOK AKHIR GRAMEDIA)'] !== undefined ? match['EOH (STOK AKHIR GRAMEDIA)'] : '',
                     'STATUS SYSTEM': '✅ MATCHED'
                 }));
 
@@ -281,6 +281,8 @@
                             'KODE BSOFT': match['KODE BSOFT'] || row['KODE BSOFT'] || row['iditem'] || '',
                             'JUDUL ITEM': match['JUDUL ITEM'] || row['JUDUL ITEM'] || row['judul'] || row['Judul'] || '',
                             'HARGA': match['HARGA'] !== undefined ? match['HARGA'] : (row['HARGA'] || ''),
+                            'SOLD (TERJUAL BULAN INI)': match['SOLD (TERJUAL BULAN INI)'] !== undefined ? match['SOLD (TERJUAL BULAN INI)'] : (row['SOLD (TERJUAL BULAN INI)'] || ''),
+                            'EOH (STOK AKHIR GRAMEDIA)': match['EOH (STOK AKHIR GRAMEDIA)'] !== undefined ? match['EOH (STOK AKHIR GRAMEDIA)'] : (row['EOH (STOK AKHIR GRAMEDIA)'] || ''),
                             'STATUS SYSTEM': '✅ MATCHED'
                         };
                     } else {
@@ -323,7 +325,6 @@
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
 
-            // Menampilkan hingga 50 baris pertama khusus untuk hasil pencarian teks bebas agar lebih puas
             const limit = Math.min(dataArray.length, 50);
             for (let i = 0; i < limit; i++) {
                 let rowHtml = '<tr class="hover:bg-gray-50 border-b">';
