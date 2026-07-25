@@ -34,9 +34,9 @@
         <!-- FITUR 1: Pencarian Manual (ID / Judul) -->
         <div class="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
             <label class="block text-gray-800 font-bold mb-2">🔍 Fitur 1: Pencarian Cepat (ID / Judul Buku)</label>
-            <p class="text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau nama Judul Buku (contoh: <i>garda</i> / <i>leika</i>) lalu tekan Enter.</p>
+            <p class="text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau nama Judul Buku lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data)</b>.</p>
             <div class="flex gap-2">
-                <input type="text" id="manual-search-input" placeholder="Masukkan ID atau Judul Buku..." class="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                <input type="text" id="manual-search-input" placeholder="Masukkan ID atau Judul Buku (Atau biarkan kosong)..." class="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                 <button id="search-btn" onclick="searchManual()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari
                 </button>
@@ -132,13 +132,14 @@
         let database = [];     
         let dataStore = [];    
         let processedData = []; 
+        let storeSummaryMap = {}; // Optimasi Hash Map agar loading tidak freeze
         
         // Array global untuk export khusus data dari Modal
         let currentDetailData = []; 
         let currentDetailFileName = "Detail_Toko.xlsx";
 
         // URL Google Sheet 1 (Utama)
-        const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNkfOExIiFvmh8K-hNkM';
+        const sheetIdMain = '1U2jYvdm-ZYXOSh2MQe04nQJXNKfOExliFvmh8k-hNkM';
         const gidMain = '1020016179';
         const csvUrlMain = `https://docs.google.com/spreadsheets/d/${sheetIdMain}/export?format=csv&gid=${gidMain}`;
 
@@ -150,7 +151,7 @@
         // Utility: Membersihkan string 
         const cleanStr = (str) => str ? String(str).trim().toLowerCase() : "";
 
-        // Utility: Parser Angka Super Aman (Anti Imbuhan "00" akibat format Rupiah/Desimal)
+        // Utility: Parser Angka Super Aman
         const parseNum = (val) => {
             if (!val) return 0;
             let s = String(val).trim();
@@ -165,7 +166,7 @@
         // Utility: Escape text for HTML attributes
         const escapeAttr = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-        // 1. Ambil dan bersihkan data dari KEDUA Google Sheet (Promise.all)
+        // 1. Ambil dan bersihkan data dari KEDUA Google Sheet
         window.onload = async function() {
             try {
                 const [resMain, resStore] = await Promise.all([
@@ -195,6 +196,19 @@
                     skipEmptyLines: true,
                     complete: function(results) {
                         dataStore = results.data.slice(9);
+
+                        // === PROSES OPTIMASI HASH MAP ===
+                        // Menghitung rekap total toko di awal, agar saat pencarian memuat semua data web tidak lag/hang
+                        dataStore.forEach(st => {
+                            let id = cleanStr(st[1]);
+                            if(!id) return;
+                            
+                            if(!storeSummaryMap[id]) {
+                                storeSummaryMap[id] = { totalSold: 0, totalEoh: 0 };
+                            }
+                            storeSummaryMap[id].totalSold += parseNum(st[7]);
+                            storeSummaryMap[id].totalEoh += parseNum(st[11]);
+                        });
                     }
                 });
 
@@ -215,20 +229,17 @@
             }
         };
 
-        // Fungsi Kalkulasi Otomatis dari Data Toko
+        // Fungsi Kalkulasi menggunakan Hash Map (Sangat Cepat - O(1))
         function calcStoreData(idOrin) {
-            const stores = dataStore.filter(r => cleanStr(r[1]) === cleanStr(idOrin));
-            let totalSold = 0;
-            let totalEoh = 0;
-            stores.forEach(st => {
-                totalSold += parseNum(st[7]);  
-                totalEoh += parseNum(st[11]); 
-            });
-            return { totalSold, totalEoh };
+            let id = cleanStr(idOrin);
+            if(storeSummaryMap[id]) {
+                return storeSummaryMap[id];
+            }
+            return { totalSold: 0, totalEoh: 0 };
         }
 
         // ==========================================
-        // FITUR PENCARIAN MANUAL (ID / JUDUL)
+        // FITUR PENCARIAN MANUAL (ID / JUDUL / TAMPIL SEMUA)
         // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
@@ -245,16 +256,19 @@
             const searchInput = document.getElementById('manual-search-input');
             const searchVal = searchInput.value.trim().toLowerCase();
             
-            if (!searchVal) {
-                alert("Masukkan kata kunci pencarian (ID atau Judul)!");
-                return;
-            }
+            let matches = [];
 
-            const matches = database.filter(dbRow => {
-                return cleanStr(dbRow['ID ORIN']).includes(searchVal) || 
-                       cleanStr(dbRow['KODE BSOFT']).includes(searchVal) || 
-                       cleanStr(dbRow['JUDUL ITEM']).includes(searchVal);
-            });
+            // Jika input kosong, tampilkan SEMUA data
+            if (!searchVal) {
+                matches = database;
+            } else {
+                // Jika ada input, filter berdasarkan ID / KODE / JUDUL
+                matches = database.filter(dbRow => {
+                    return cleanStr(dbRow['ID ORIN']).includes(searchVal) || 
+                           cleanStr(dbRow['KODE BSOFT']).includes(searchVal) || 
+                           cleanStr(dbRow['JUDUL ITEM']).includes(searchVal);
+                });
+            }
 
             if (matches.length > 0) {
                 processedData = matches.map(match => {
@@ -272,6 +286,12 @@
 
                 renderPreview(processedData);
                 document.getElementById('export-btn').classList.remove('hidden');
+                
+                if (searchVal) {
+                    // Hanya alert jika user mencari kata kunci tertentu
+                    // Jika memuat semua, tidak perlu alert agar tidak mengganggu
+                }
+                
             } else {
                 processedData = [{
                     'KATA KUNCI DICARI': searchVal,
@@ -282,7 +302,6 @@
                 alert("Data tidak ditemukan.");
             }
             
-            searchInput.value = '';
             searchInput.focus();
         }
 
@@ -443,7 +462,8 @@
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
 
-            const limit = Math.min(dataArray.length, 50); 
+            // Batasi tampilan maksimal 100 baris agar browser tidak berat render HTML-nya
+            const limit = Math.min(dataArray.length, 100); 
             for (let i = 0; i < limit; i++) {
                 let rowHtml = '<tr class="hover:bg-gray-50 border-b">';
                 
@@ -455,11 +475,9 @@
                     let judulItem = escapeAttr(dataArray[i]['JUDUL ITEM'] || '-');
                     let harga = escapeAttr(dataArray[i]['HARGA'] || '-');
 
-                    // Format khusus tebal untuk angka SOLD & EOH
                     if (header === 'SOLD (TERJUAL BULAN INI)' || header === 'EOH (STOK AKHIR GRAMEDIA)') {
                         rowHtml += `<td class="py-3 px-4 border font-bold text-center text-gray-800">${val}</td>`;
                     }
-                    // Tempatkan tombol "Lihat Detail" di kolom STATUS SYSTEM jika MATCHED
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
                         rowHtml += `<td class="py-3 px-4 border font-bold text-center">
                             <span class="text-green-600">${val}</span><br>
@@ -476,6 +494,11 @@
                 rowHtml += '</tr>';
                 tbody.innerHTML += rowHtml;
             }
+            
+            // Tambahkan baris info jika data yang dirender dipotong
+            if (dataArray.length > limit) {
+                tbody.innerHTML += `<tr><td colspan="${headers.length}" class="py-4 text-center text-gray-500 font-semibold bg-gray-50">Menampilkan ${limit} dari ${dataArray.length} data. Silakan gunakan tombol Export untuk melihat keseluruhan data.</td></tr>`;
+            }
         }
 
         // ==========================================
@@ -490,21 +513,17 @@
             const tbody = document.getElementById('detailBody');
             tbody.innerHTML = "";
 
-            // 1. Buat Format Tanggal: DDMMYYYY
             const now = new Date();
             const dd = String(now.getDate()).padStart(2, '0');
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const yyyy = now.getFullYear();
             const dateStr = dd + mm + yyyy;
 
-            // 2. Buat Format Judul Bersih (Hilangkan karakter aneh, spasi jadi strip)
             const safeJudul = judulItem.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/\s+/g, '-').toUpperCase();
 
-            // 3. Gabungkan jadi nama file final
             currentDetailData = [];
             currentDetailFileName = `Detail_Toko_${dateStr}_${safeJudul}.xlsx`;
 
-            // Filter toko berdasarkan ID
             const stores = dataStore.filter(row => cleanStr(row[1]) === cleanStr(idOrin));
             let hasData = false;
 
@@ -513,7 +532,6 @@
                 const valSold = parseNum(store[7]); 
                 const valEoh = parseNum(store[11]); 
                 
-                // Tampilkan hanya jika ada buku yang terjual ATAU ada stoknya di toko tersebut
                 if (valSold > 0 || valEoh > 0) {
                     hasData = true;
                     
