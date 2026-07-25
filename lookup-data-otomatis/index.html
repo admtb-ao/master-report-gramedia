@@ -17,27 +17,43 @@
             transform: scale(1.02);
             transition: all 0.2s ease;
         }
+        /* Custom scrollbar untuk tabel agar lebih cantik di desktop/mobile */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8; 
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen p-8 relative">
+<body class="bg-gray-100 font-sans min-h-screen p-4 md:p-8 relative">
 
-    <div class="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
-        <p class="text-gray-600 mb-6">Cari data manual (berdasarkan ID, Judul, atau Nama Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
+    <div class="max-w-5xl mx-auto bg-white p-5 md:p-8 rounded-lg shadow-md">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
+        <p class="text-sm md:text-base text-gray-600 mb-6">Cari data manual (berdasarkan ID atau Judul) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
 
         <!-- Status Database -->
-        <div class="mb-6 p-4 rounded bg-gray-50 border">
+        <div class="mb-6 p-3 md:p-4 rounded bg-gray-50 border text-sm md:text-base">
             <span class="font-semibold text-gray-700">Status Database: </span>
             <span id="db-status" class="text-blue-600 font-bold">Sedang Menghubungkan ke 2 Google Sheet... ⏳</span>
         </div>
 
-        <!-- FITUR 1: Pencarian Manual (ID / Judul / Toko) -->
-        <div class="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+        <!-- FITUR 1: Pencarian Manual (ID / Judul) -->
+        <div class="mb-6 p-4 md:p-6 bg-blue-50 rounded-lg border border-blue-200">
             <label class="block text-gray-800 font-bold mb-2">🔍 Fitur 1: Pencarian Cepat</label>
-            <p class="text-sm text-gray-600 mb-3">Ketik ID ORIN, Judul Buku, atau <b>Nama Toko</b> (contoh: <i>gajah mada</i>) lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data)</b>.</p>
-            <div class="flex gap-2">
-                <input type="text" id="manual-search-input" placeholder="Masukkan ID, Judul Buku, atau Nama Toko..." class="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
-                <button id="search-btn" onclick="searchManual()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
+            <p class="text-xs md:text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau Judul Buku (contoh: <i>garda</i> / <i>leika</i>) lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data)</b>.</p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="manual-search-input" placeholder="Masukkan ID atau Judul Buku..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                <button id="search-btn" onclick="searchManual()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari
                 </button>
             </div>
@@ -46,33 +62,33 @@
         <!-- FITUR 2: Area Drag & Drop Bulk Upload -->
         <div class="mb-6">
             <label class="block text-gray-800 font-bold mb-2">📂 Fitur 2: Upload Excel Mentah (Massal)</label>
-            <p class="text-sm text-gray-600 mb-2">Upload file Excel Anda (mengandung kolom Item Id/ID ORIN/KODE BSOFT/iditem). Sistem otomatis memindai dan memproses datanya.</p>
-            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative">
+            <p class="text-xs md:text-sm text-gray-600 mb-2">Upload file Excel Anda (mengandung kolom Item Id/ID ORIN/KODE BSOFT/iditem). Sistem otomatis memindai dan memproses datanya.</p>
+            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 md:p-8 text-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative">
                 <div class="text-gray-500 pointer-events-none">
-                    <span class="text-4xl block mb-2">📥</span>
-                    <p class="text-lg font-semibold">Drag & Drop file Excel Anda ke sini</p>
-                    <p class="text-sm mt-1">atau klik untuk memilih file (.xlsx, .xls)</p>
+                    <span class="text-3xl md:text-4xl block mb-2">📥</span>
+                    <p class="text-base md:text-lg font-semibold">Drag & Drop file Excel Anda ke sini</p>
+                    <p class="text-xs md:text-sm mt-1">atau klik untuk memilih file (.xlsx, .xls)</p>
                 </div>
                 <input type="file" id="file-upload" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled>
             </div>
         </div>
 
         <!-- Tombol Export -->
-        <div class="mb-8">
-            <button id="export-btn" onclick="exportToExcel()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded shadow-lg text-lg transition">
+        <div class="mb-6 md:mb-8">
+            <button id="export-btn" onclick="exportToExcel()" class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded shadow-lg text-sm md:text-lg transition">
                 📥 Download Excel Hasil (Export)
             </button>
         </div>
 
         <!-- Tabel Preview -->
         <div>
-            <h2 class="text-lg font-bold text-gray-800 mb-2">Preview Hasil Pencarian / Data</h2>
+            <h2 class="text-base md:text-lg font-bold text-gray-800 mb-2">Preview Hasil Pencarian / Data</h2>
             <div class="overflow-x-auto shadow-sm rounded border">
-                <table class="min-w-full bg-white text-center">
+                <table class="min-w-full bg-white text-center whitespace-nowrap md:whitespace-normal">
                     <thead class="bg-gray-800 text-white" id="table-head">
                         <!-- Header akan muncul di sini -->
                     </thead>
-                    <tbody class="text-gray-700 text-sm align-middle" id="table-body">
+                    <tbody class="text-gray-700 text-xs md:text-sm align-middle" id="table-body">
                         <!-- Data akan muncul di sini -->
                     </tbody>
                 </table>
@@ -81,34 +97,34 @@
     </div>
 
     <!-- TAILWIND MODAL (Pop-up Detail Per Toko) -->
-    <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col overflow-hidden">
             <!-- Header Modal -->
-            <div class="flex justify-between items-center p-5 bg-blue-800 text-white">
-                <h5 class="font-bold text-xl">Rincian Per Toko Gramedia</h5>
-                <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-3xl leading-none">&times;</button>
+            <div class="flex justify-between items-center p-4 md:p-5 bg-blue-800 text-white">
+                <h5 class="font-bold text-lg md:text-xl">Rincian Per Toko Gramedia</h5>
+                <button onclick="closeModal()" class="text-white hover:text-gray-300 font-bold text-2xl md:text-3xl leading-none">&times;</button>
             </div>
             
             <!-- Body Modal -->
-            <div class="p-6 overflow-y-auto">
+            <div class="p-4 md:p-6 overflow-y-auto">
                 <!-- Info Buku -->
-                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-5 text-sm text-left">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-blue-50 border border-blue-200 p-3 md:p-4 rounded-lg mb-4 md:mb-5 text-xs md:text-sm text-left">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
                         <div><span class="font-semibold text-gray-600">ID ORIN:</span> <span id="mdl-id" class="font-bold text-gray-800 ml-1"></span></div>
                         <div><span class="font-semibold text-gray-600">KODE BSOFT:</span> <span id="mdl-kode" class="font-bold text-gray-800 ml-1"></span></div>
-                        <div class="md:col-span-2"><span class="font-semibold text-gray-600">JUDUL ITEM:</span> <span id="mdl-judul" class="font-bold text-gray-800 ml-1"></span></div>
-                        <div class="md:col-span-2"><span class="font-semibold text-gray-600">HARGA:</span> <span id="mdl-harga" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div class="sm:col-span-2"><span class="font-semibold text-gray-600">JUDUL ITEM:</span> <span id="mdl-judul" class="font-bold text-gray-800 ml-1"></span></div>
+                        <div class="sm:col-span-2"><span class="font-semibold text-gray-600">HARGA:</span> <span id="mdl-harga" class="font-bold text-gray-800 ml-1"></span></div>
                     </div>
                 </div>
 
                 <!-- Tabel Detail Gabungan -->
                 <div class="overflow-x-auto border rounded-lg shadow-sm">
-                    <table class="min-w-full bg-white text-sm text-center">
+                    <table class="min-w-full bg-white text-xs md:text-sm text-center whitespace-nowrap md:whitespace-normal">
                         <thead class="bg-gray-100 text-gray-700 font-semibold border-b">
                             <tr>
-                                <th class="py-3 px-4 text-left">Nama Toko</th>
-                                <th class="py-3 px-4 border-l">SOLD (Terjual)</th>
-                                <th class="py-3 px-4 border-l">EOH (Stok)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 text-left">Nama Toko</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">SOLD (Terjual)</th>
+                                <th class="py-2 md:py-3 px-3 md:px-4 border-l">EOH (Stok)</th>
                             </tr>
                         </thead>
                         <tbody id="detailBody" class="divide-y">
@@ -119,11 +135,11 @@
             </div>
 
             <!-- Footer Modal -->
-            <div class="p-4 border-t bg-gray-50 flex justify-between items-center">
-                <button onclick="exportDetailToExcel()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2">
+            <div class="p-4 border-t bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <button onclick="exportDetailToExcel()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 md:px-6 rounded-lg transition flex justify-center items-center gap-2 text-sm md:text-base">
                     📥 Export Detail Excel
                 </button>
-                <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition">Tutup</button>
+                <button onclick="closeModal()" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 md:px-6 rounded-lg transition text-sm md:text-base">Tutup</button>
             </div>
         </div>
     </div>
@@ -238,7 +254,7 @@
         }
 
         // ==========================================
-        // FITUR PENCARIAN MANUAL (ID / JUDUL / NAMA TOKO)
+        // FITUR PENCARIAN MANUAL (DIKEMBALIKAN HANYA ID & JUDUL)
         // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
@@ -257,26 +273,14 @@
             
             let matches = [];
 
-            // Jika input kosong, tampilkan SEMUA data
             if (!searchVal) {
                 matches = database;
             } else {
-                // 1. Cari apakah kata kunci cocok dengan Nama Toko di dataStore
-                const matchingStoreItemIds = new Set();
-                dataStore.forEach(st => {
-                    const namaToko = cleanStr(st[3]); // Index 3 = Nama Toko
-                    if (namaToko.includes(searchVal)) {
-                        matchingStoreItemIds.add(cleanStr(st[1])); // Menyimpan ID ORIN dari toko tsb
-                    }
-                });
-
-                // 2. Filter dari Database Utama (By ID, Judul, ATAU ID dari Toko yang cocok)
+                // Filter hanya berdasarkan ID ORIN, KODE BSOFT, atau JUDUL ITEM
                 matches = database.filter(dbRow => {
-                    const idOrin = cleanStr(dbRow['ID ORIN']);
-                    return idOrin.includes(searchVal) || 
+                    return cleanStr(dbRow['ID ORIN']).includes(searchVal) || 
                            cleanStr(dbRow['KODE BSOFT']).includes(searchVal) || 
-                           cleanStr(dbRow['JUDUL ITEM']).includes(searchVal) ||
-                           matchingStoreItemIds.has(idOrin);
+                           cleanStr(dbRow['JUDUL ITEM']).includes(searchVal);
                 });
             }
 
@@ -462,7 +466,7 @@
             const headers = Object.keys(dataArray[0]);
             let headerRow = '<tr>';
             headers.forEach(header => {
-                headerRow += `<th class="py-3 px-4 border">${header}</th>`;
+                headerRow += `<th class="py-2 md:py-3 px-3 md:px-4 border">${header}</th>`;
             });
             headerRow += '</tr>';
             thead.innerHTML = headerRow;
@@ -481,19 +485,19 @@
                     let harga = escapeAttr(dataArray[i]['HARGA'] || '-');
 
                     if (header === 'SOLD (TERJUAL BULAN INI)' || header === 'EOH (STOK AKHIR GRAMEDIA)') {
-                        rowHtml += `<td class="py-3 px-4 border font-bold text-center text-gray-800">${val}</td>`;
+                        rowHtml += `<td class="py-2 md:py-3 px-3 md:px-4 border font-bold text-center text-gray-800">${val}</td>`;
                     }
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] === '✅ MATCHED') {
-                        rowHtml += `<td class="py-3 px-4 border font-bold text-center">
+                        rowHtml += `<td class="py-2 md:py-3 px-3 md:px-4 border font-bold text-center">
                             <span class="text-green-600">${val}</span><br>
-                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}')" class="mt-2 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button>
+                            <button onclick="lihatDetail('${idOrin}', '${kodeBsoft}', '${judulItem}', '${harga}')" class="mt-2 text-[10px] md:text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1.5 px-3 rounded font-bold border border-indigo-300 shadow-sm transition whitespace-nowrap">Lihat Detail Toko</button>
                         </td>`;
                     } 
                     else if (header === 'STATUS SYSTEM' && dataArray[i]['STATUS SYSTEM'] !== '✅ MATCHED') {
-                        rowHtml += `<td class="py-3 px-4 border font-bold text-center text-red-600">${val}</td>`;
+                        rowHtml += `<td class="py-2 md:py-3 px-3 md:px-4 border font-bold text-center text-red-600">${val}</td>`;
                     }
                     else {
-                        rowHtml += `<td class="py-2 px-4 border">${val}</td>`;
+                        rowHtml += `<td class="py-2 md:py-3 px-3 md:px-4 border">${val}</td>`;
                     }
                 });
                 rowHtml += '</tr>';
@@ -502,7 +506,7 @@
             
             // Tambahkan baris info jika data yang dirender dipotong
             if (dataArray.length > limit) {
-                tbody.innerHTML += `<tr><td colspan="${headers.length}" class="py-4 text-center text-gray-500 font-semibold bg-gray-50">Menampilkan ${limit} dari ${dataArray.length} data. Silakan gunakan tombol Export untuk melihat keseluruhan data.</td></tr>`;
+                tbody.innerHTML += `<tr><td colspan="${headers.length}" class="py-3 md:py-4 text-center text-gray-500 font-semibold bg-gray-50 text-xs md:text-sm">Menampilkan ${limit} dari ${dataArray.length} data. Silakan gunakan tombol Export untuk melihat keseluruhan data.</td></tr>`;
             }
         }
 
@@ -542,9 +546,9 @@
                     
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 text-left border-b">${namaToko}</td>
-                            <td class="py-2 px-4 font-bold border-b border-l text-blue-600">${valSold}</td>
-                            <td class="py-2 px-4 font-bold border-b border-l text-green-600">${valEoh}</td>
+                            <td class="py-2 md:py-2 px-3 md:px-4 text-left border-b">${namaToko}</td>
+                            <td class="py-2 md:py-2 px-3 md:px-4 font-bold border-b border-l text-blue-600">${valSold}</td>
+                            <td class="py-2 md:py-2 px-3 md:px-4 font-bold border-b border-l text-green-600">${valEoh}</td>
                         </tr>
                     `;
 
@@ -561,7 +565,7 @@
             });
 
             if (!hasData) {
-                tbody.innerHTML = `<tr><td colspan="3" class="py-6 text-gray-500 italic text-center">Tidak ada riwayat SOLD maupun EOH di semua toko.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 md:py-6 text-gray-500 italic text-center text-xs md:text-sm">Tidak ada riwayat SOLD maupun EOH di semua toko.</td></tr>`;
             }
 
             document.getElementById('detailModal').classList.remove('hidden');
