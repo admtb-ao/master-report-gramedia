@@ -23,7 +23,7 @@
 
     <div class="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-2xl font-bold text-gray-800 mb-2">Automasi Lookup Data Gramedia</h1>
-        <p class="text-gray-600 mb-6">Cari data manual (berdasarkan ID atau Judul) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
+        <p class="text-gray-600 mb-6">Cari data manual (berdasarkan ID, Judul, atau Nama Toko) atau upload Excel massal. Web ini dilengkapi <b>Auto-Scan Header</b> dan pencarian fleksibel dari Multi-Database.</p>
 
         <!-- Status Database -->
         <div class="mb-6 p-4 rounded bg-gray-50 border">
@@ -31,12 +31,12 @@
             <span id="db-status" class="text-blue-600 font-bold">Sedang Menghubungkan ke 2 Google Sheet... ⏳</span>
         </div>
 
-        <!-- FITUR 1: Pencarian Manual (ID / Judul) -->
+        <!-- FITUR 1: Pencarian Manual (ID / Judul / Toko) -->
         <div class="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-            <label class="block text-gray-800 font-bold mb-2">🔍 Fitur 1: Pencarian Cepat (ID / Judul Buku)</label>
-            <p class="text-sm text-gray-600 mb-3">Ketik ID ORIN, Kode Bsoft, atau nama Judul Buku lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data)</b>.</p>
+            <label class="block text-gray-800 font-bold mb-2">🔍 Fitur 1: Pencarian Cepat</label>
+            <p class="text-sm text-gray-600 mb-3">Ketik ID ORIN, Judul Buku, atau <b>Nama Toko</b> (contoh: <i>gajah mada</i>) lalu tekan Enter. <b>(Kosongkan lalu tekan Cari untuk memuat semua data)</b>.</p>
             <div class="flex gap-2">
-                <input type="text" id="manual-search-input" placeholder="Masukkan ID atau Judul Buku (Atau biarkan kosong)..." class="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                <input type="text" id="manual-search-input" placeholder="Masukkan ID, Judul Buku, atau Nama Toko..." class="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                 <button id="search-btn" onclick="searchManual()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow transition opacity-50 cursor-not-allowed" disabled>
                     Cari
                 </button>
@@ -132,7 +132,7 @@
         let database = [];     
         let dataStore = [];    
         let processedData = []; 
-        let storeSummaryMap = {}; // Optimasi Hash Map agar loading tidak freeze
+        let storeSummaryMap = {}; 
         
         // Array global untuk export khusus data dari Modal
         let currentDetailData = []; 
@@ -197,8 +197,7 @@
                     complete: function(results) {
                         dataStore = results.data.slice(9);
 
-                        // === PROSES OPTIMASI HASH MAP ===
-                        // Menghitung rekap total toko di awal, agar saat pencarian memuat semua data web tidak lag/hang
+                        // Optimasi Hash Map
                         dataStore.forEach(st => {
                             let id = cleanStr(st[1]);
                             if(!id) return;
@@ -229,7 +228,7 @@
             }
         };
 
-        // Fungsi Kalkulasi menggunakan Hash Map (Sangat Cepat - O(1))
+        // Fungsi Kalkulasi menggunakan Hash Map
         function calcStoreData(idOrin) {
             let id = cleanStr(idOrin);
             if(storeSummaryMap[id]) {
@@ -239,7 +238,7 @@
         }
 
         // ==========================================
-        // FITUR PENCARIAN MANUAL (ID / JUDUL / TAMPIL SEMUA)
+        // FITUR PENCARIAN MANUAL (ID / JUDUL / NAMA TOKO)
         // ==========================================
         document.getElementById('manual-search-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
@@ -262,11 +261,22 @@
             if (!searchVal) {
                 matches = database;
             } else {
-                // Jika ada input, filter berdasarkan ID / KODE / JUDUL
+                // 1. Cari apakah kata kunci cocok dengan Nama Toko di dataStore
+                const matchingStoreItemIds = new Set();
+                dataStore.forEach(st => {
+                    const namaToko = cleanStr(st[3]); // Index 3 = Nama Toko
+                    if (namaToko.includes(searchVal)) {
+                        matchingStoreItemIds.add(cleanStr(st[1])); // Menyimpan ID ORIN dari toko tsb
+                    }
+                });
+
+                // 2. Filter dari Database Utama (By ID, Judul, ATAU ID dari Toko yang cocok)
                 matches = database.filter(dbRow => {
-                    return cleanStr(dbRow['ID ORIN']).includes(searchVal) || 
+                    const idOrin = cleanStr(dbRow['ID ORIN']);
+                    return idOrin.includes(searchVal) || 
                            cleanStr(dbRow['KODE BSOFT']).includes(searchVal) || 
-                           cleanStr(dbRow['JUDUL ITEM']).includes(searchVal);
+                           cleanStr(dbRow['JUDUL ITEM']).includes(searchVal) ||
+                           matchingStoreItemIds.has(idOrin);
                 });
             }
 
@@ -286,11 +296,6 @@
 
                 renderPreview(processedData);
                 document.getElementById('export-btn').classList.remove('hidden');
-                
-                if (searchVal) {
-                    // Hanya alert jika user mencari kata kunci tertentu
-                    // Jika memuat semua, tidak perlu alert agar tidak mengganggu
-                }
                 
             } else {
                 processedData = [{
