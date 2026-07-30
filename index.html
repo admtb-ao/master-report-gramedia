@@ -10,7 +10,6 @@
 <link href="https://cdn.jsdelivr.net/npm/gridjs@6.0.6/dist/theme/mermaid.min.css" rel="stylesheet" />
 
 <style>
-/* STRUKTUR UTAMA DIUBAH MENJADI FLEX FULL HEIGHT */
 html, body {
   margin: 0;
   padding: 0;
@@ -26,7 +25,6 @@ body {
   flex-direction: column;
 }
 
-/* BANNER */
 .banner {
   width: 100%;
   height: 180px;
@@ -40,7 +38,6 @@ body {
   object-fit: cover;
 }
 
-/* TITLE AS HOME BUTTON */
 .title {
   text-align: center;
   font-size: 48px;
@@ -58,7 +55,6 @@ body {
   transform: scale(1.02);
 }
 
-/* LAYOUT */
 .container {
   display: flex;
   flex: 1;
@@ -67,7 +63,6 @@ body {
   gap: 0; 
 }
 
-/* SIDEBAR */
 .sidebar {
   width: 320px;
   min-width: 320px;
@@ -109,7 +104,6 @@ body {
   cursor: pointer;
 }
 
-/* SEARCH */
 #searchInput {
   width: 100%;
   padding: 12px;
@@ -123,7 +117,6 @@ body {
   transition: 0.3s;
 }
 
-/* MENU */
 .menu-item {
   background: #0d7cc1;
   color: white;
@@ -148,7 +141,6 @@ body {
   box-shadow: 0 0 10px rgba(13,124,193,0.5);
 }
 
-/* MAIN */
 .main {
   flex: 1;
   display: flex;
@@ -208,7 +200,6 @@ body {
   transform: scale(1.05);
 }
 
-/* VIEWER */
 .viewer {
   flex: 1;
   display: flex;
@@ -256,7 +247,6 @@ body {
   background: #095f93;
 }
 
-/* WELCOME */
 .welcome {
   position: absolute;
   inset: 0;
@@ -291,7 +281,6 @@ body {
   font-size: 18px;
 }
 
-/* SKELETON LOADING */
 .skeleton {
   position: absolute;
   inset: 0;
@@ -337,7 +326,6 @@ body {
   100% { background-position: 0 50%; }
 }
 
-/* DARK MODE */
 body.dark { background: #111827; color: white; }
 body.dark .sidebar,
 body.dark .box,
@@ -367,7 +355,6 @@ body.dark .gridjs-search-input { background-color: #374151 !important; color: wh
 body.dark .gridjs-footer { background-color: #1f2937 !important; border-color: #374151 !important; color: #d1d5db !important; }
 body.dark .gridjs-pagination button { background-color: #374151 !important; color: white !important; border-color: #4b5563 !important; }
 
-/* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
   .banner { height: 110px; }
   .title { font-size: 34px; margin: 20px 0; padding: 0 10px; }
@@ -574,7 +561,7 @@ Silakan pilih menu report di sebelah kiri untuk memulai.
 </div>
 </div>
 
-<!-- SCRIPT LIBRARY: PAPAPARSE UNTUK CSV & GRID.JS UNTUK TABEL -->
+<!-- SCRIPT LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gridjs@6.0.6/dist/gridjs.umd.js"></script>
 
@@ -605,7 +592,6 @@ function closeSidebarOnly() {
   document.getElementById("sidebar").classList.remove("active");
 }
 
-/* FUNGSI UTAMA LOAD DATA DATA LOKAL FETCHING */
 async function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = false) {
   const sidebar = document.getElementById("sidebar");
 
@@ -644,16 +630,14 @@ async function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = fal
     }
 
     try {
-      // Ambil data CSV mentah
       const response = await fetch(sourceUrl);
       if (!response.ok) throw new Error("Gagal mengambil file CSV.");
       const csvText = await response.text();
 
-      // Parsing CSV menggunakan PapaParse
       Papa.parse(csvText, {
         skipEmptyLines: true,
         complete: function(results) {
-          const parsedData = results.data;
+          let parsedData = results.data;
 
           if (!parsedData || parsedData.length === 0) {
             alert("Data spreadsheet kosong!");
@@ -661,10 +645,19 @@ async function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = fal
             return;
           }
 
-          const headers = parsedData[0]; // Baris pertama sebagai Header
-          const bodyData = parsedData.slice(1); // Sisanya sebagai Baris Data
+          // PEMBERSIH BARIS: Otomatis cari baris yang mengandung header utama (misal: "Item Id", "Judul", "SKU", dll)
+          let headerIndex = 0;
+          for (let i = 0; i < Math.min(parsedData.length, 10); i++) {
+            let rowString = parsedData[i].join(" ").toLowerCase();
+            if (rowString.includes("item") || rowString.includes("judul") || rowString.includes("nama") || rowString.includes("kode") || rowString.includes("isbn")) {
+              headerIndex = i;
+              break;
+            }
+          }
 
-          // Render Grid.js dengan Data Lokal
+          const headers = parsedData[headerIndex];
+          const bodyData = parsedData.slice(headerIndex + 1);
+
           currentGrid = new gridjs.Grid({
             columns: headers,
             data: bodyData,
@@ -672,7 +665,11 @@ async function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = fal
             pagination: { limit: 25, summary: true },
             sort: true,
             resizable: true,
-            style: { table: { 'font-size': '13px', 'white-space': 'nowrap' } }
+            style: { 
+              table: { 'font-size': '13px' },
+              th: { 'white-space': 'nowrap', 'background-color': '#f8fafc' },
+              td: { 'white-space': 'normal', 'word-break': 'break-word' }
+            }
           }).render(tableContainer);
 
           loading.style.display = "none";
