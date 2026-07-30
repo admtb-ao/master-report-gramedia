@@ -61,7 +61,7 @@ body {
 /* LAYOUT */
 .container {
   display: flex;
-  flex: 1; /* Akan otomatis mengisi sisa layar ke bawah */
+  flex: 1;
   padding: 10px;
   box-sizing: border-box;
   gap: 0; 
@@ -81,7 +81,6 @@ body {
   transition: all 0.3s ease;
 }
 
-/* CLASS UNTUK MINIMIZE SIDEBAR */
 .sidebar.collapsed {
   width: 0;
   min-width: 0;
@@ -165,7 +164,6 @@ body {
   flex-shrink: 0;
 }
 
-/* HAMBURGER TOGGLE BUTTON */
 #sidebarToggle {
   width: 70px;
   border: none;
@@ -194,7 +192,6 @@ body {
   transition: 0.3s;
 }
 
-/* DARK BUTTON */
 #darkToggle {
   width: 70px;
   border: none;
@@ -225,7 +222,6 @@ body {
   min-height: 500px;
 }
 
-/* WRAPPER TABEL GRID.JS */
 #tableContainer {
   flex: 1;
   width: 100%;
@@ -235,7 +231,6 @@ body {
   overflow: auto;
 }
 
-/* ACTIONS DI ATAS */
 .actions {
   display: none;
   gap: 10px;
@@ -296,7 +291,7 @@ body {
   font-size: 18px;
 }
 
-/* MODERN SKELETON */
+/* SKELETON LOADING */
 .skeleton {
   position: absolute;
   inset: 0;
@@ -342,7 +337,7 @@ body {
   100% { background-position: 0 50%; }
 }
 
-/* DARK MODE STYLING */
+/* DARK MODE */
 body.dark { background: #111827; color: white; }
 body.dark .sidebar,
 body.dark .box,
@@ -365,11 +360,10 @@ body.dark .skeleton-cell {
 body.dark #sidebarToggle { background: #1f2937; }
 body.dark #sidebarToggle:hover { background: #374151; }
 
-/* Grid.js Customization for Dark Mode */
 body.dark .gridjs-wrapper { background-color: #1f2937 !important; color: #f3f4f6 !important; border-color: #374151 !important; }
 body.dark .gridjs-th { background-color: #111827 !important; color: #f3f4f6 !important; border-color: #374151 !important; }
 body.dark .gridjs-td { background-color: #1f2937 !important; color: #d1d5db !important; border-color: #374151 !important; }
-body.dark .gridjs-search-input { background-color: #374151 !important; color: #white !important; border-color: #4b5563 !important; }
+body.dark .gridjs-search-input { background-color: #374151 !important; color: white !important; border-color: #4b5563 !important; }
 body.dark .gridjs-footer { background-color: #1f2937 !important; border-color: #374151 !important; color: #d1d5db !important; }
 body.dark .gridjs-pagination button { background-color: #374151 !important; color: white !important; border-color: #4b5563 !important; }
 
@@ -410,7 +404,6 @@ body.dark .gridjs-pagination button { background-color: #374151 !important; colo
   .skeleton-row { flex-direction: column; }
 }
 
-/* BUTTERFLY */
 .butterfly {
   position: fixed;
   width: 100px;
@@ -424,19 +417,16 @@ body.dark .gridjs-pagination button { background-color: #374151 !important; colo
 
 <body>
 
-<!-- BANNER -->
 <div class="banner">
 <img src="https://lh3.googleusercontent.com/d/1XafY2Es0JjTEy5_BZbr9zL12QJTTvTuQ?v=2">
 </div>
 
-<!-- TITLE / HOME BUTTON -->
 <div class="title" onclick="goHome()" title="Kembali ke Halaman Awal">
 DASHBOARD & REPORTING
 </div>
 
 <div class="container">
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 
 <h2>Menu <button class="close-sidebar" onclick="closeSidebarOnly()">✖</button></h2>
@@ -457,15 +447,6 @@ this, true)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/1jBSChwU4lIRdCob7jOMeiwyxy5SACke9/gviz/tq?tqx=out:csv',
-'https://docs.google.com/file/d/1jBSChwU4lIRdCob7jOMeiwyxy5SACke9/edit',
-'https://docs.google.com/file/d/1jBSChwU4lIRdCob7jOMeiwyxy5SACke9/export?format=xlsx',
-this)">
-📘 ID ORIN GRAMEDIA X KODE BSOFT
-</div>
-
-<div class="menu-item"
-onclick="loadData(
 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRp4LchC_VJDgfXGntovESiJ8IKLYhsKnHy2_ZXBIwN889-CzyWXmF4pCE8yYcv4t9Vsui1yNr7qwRe/pub?output=csv',
 'https://docs.google.com/file/d/10HY1ZhTyixmWnqSKBTnbMWB8kBEf5l41/edit',
 'https://docs.google.com/file/d/10HY1ZhTyixmWnqSKBTnbMWB8kBEf5l41/export?format=xlsx',
@@ -475,7 +456,16 @@ this)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/10WlAGHLvB6K_L2RLtzVeAX24hB1BERw6/gviz/tq?tqx=out:csv',
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
+'https://docs.google.com/file/d/1jBSChwU4lIRdCob7jOMeiwyxy5SACke9/edit',
+'https://docs.google.com/file/d/1jBSChwU4lIRdCob7jOMeiwyxy5SACke9/export?format=xlsx',
+this)">
+📘 ID ORIN GRAMEDIA X KODE BSOFT
+</div>
+
+<div class="menu-item"
+onclick="loadData(
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
 'https://docs.google.com/file/d/10WlAGHLvB6K_L2RLtzVeAX24hB1BERw6/edit',
 'https://docs.google.com/file/d/10WlAGHLvB6K_L2RLtzVeAX24hB1BERw6/export?format=xlsx',
 this)">
@@ -484,7 +474,7 @@ this)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/1jTx-8YH5WhmeJlSA6HWyegqP_sFNzp8c/gviz/tq?tqx=out:csv',
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
 'https://docs.google.com/file/d/1jTx-8YH5WhmeJlSA6HWyegqP_sFNzp8c/edit',
 'https://docs.google.com/file/d/1jTx-8YH5WhmeJlSA6HWyegqP_sFNzp8c/export?format=xlsx',
 this)">
@@ -493,7 +483,7 @@ this)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/1NPUSAjGZ9bp1usnQra5VvBFeFacjHyo_/gviz/tq?tqx=out:csv',
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
 'https://docs.google.com/file/d/1NPUSAjGZ9bp1usnQra5VvBFeFacjHyo_/edit',
 'https://docs.google.com/file/d/1NPUSAjGZ9bp1usnQra5VvBFeFacjHyo_/export?format=xlsx',
 this)">
@@ -502,7 +492,7 @@ this)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/1prfqT2jfSNY5tTkO_xHdJSe-GJD9KydV/gviz/tq?tqx=out:csv',
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
 'https://docs.google.com/file/d/1prfqT2jfSNY5tTkO_xHdJSe-GJD9KydV/edit',
 'https://docs.google.com/file/d/1prfqT2jfSNY5tTkO_xHdJSe-GJD9KydV/export?format=xlsx',
 this)">
@@ -511,7 +501,7 @@ this)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/1-VgWMEy9hHpI-j6SNF04SRNKpwrViOl1/gviz/tq?tqx=out:csv',
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
 'https://docs.google.com/file/d/1-VgWMEy9hHpI-j6SNF04SRNKpwrViOl1/edit',
 'https://docs.google.com/file/d/1-VgWMEy9hHpI-j6SNF04SRNKpwrViOl1/export?format=xlsx',
 this)">
@@ -520,7 +510,7 @@ this)">
 
 <div class="menu-item"
 onclick="loadData(
-'https://docs.google.com/spreadsheets/d/1u3wxzQrxxgCoui_NAvVATe9Oxpd-RIOW/gviz/tq?tqx=out:csv',
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Ganti_Link_CSV_Lainnya_Disini/pub?output=csv',
 'https://docs.google.com/file/d/1u3wxzQrxxgCoui_NAvVATe9Oxpd-RIOW/edit',
 'https://docs.google.com/file/d/1u3wxzQrxxgCoui_NAvVATe9Oxpd-RIOW/export?format=xlsx',
 this)">
@@ -535,10 +525,8 @@ this)">
 
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-<!-- TOPBAR -->
 <div class="topbar">
 <button id="sidebarToggle" onclick="toggleSidebar()" title="Buka/Tutup Menu">☰</button>
 <div class="box" id="clock"></div>
@@ -546,7 +534,6 @@ this)">
 <button id="darkToggle" onclick="toggleDarkMode()">🌙</button>
 </div>
 
-<!-- VIEWER -->
 <div class="viewer">
 
 <div class="actions" id="actions">
@@ -554,7 +541,6 @@ this)">
 <a id="downloadExcel" class="action-btn" target="_blank">⬇ Download Excel</a>
 </div>
 
-<!-- MODERN SKELETON -->
 <div class="skeleton" id="loading">
 <div class="loading-modern-text">Loading Report...</div>
 <div class="skeleton-line large"></div>
@@ -566,7 +552,6 @@ this)">
 </div>
 </div>
 
-<!-- WELCOME -->
 <div class="welcome" id="welcome">
 <h1>Selamat Datang 👋</h1>
 <p>
@@ -578,10 +563,8 @@ Silakan pilih menu report di sebelah kiri untuk memulai.
 </div>
 </div>
 
-<!-- TABEL MODERN CONTAINER -->
 <div id="tableContainer"></div>
 
-<!-- IFRAME KHUSUS UNTUK VERCEL / EXTERNAL LINK -->
 <iframe id="frame" style="width:100%;flex:1;border:none;display:none;"></iframe>
 
 <div id="gameArea" style="display:none;position:absolute;inset:0;background:white;overflow:auto;z-index:9;"></div>
@@ -591,13 +574,13 @@ Silakan pilih menu report di sebelah kiri untuk memulai.
 </div>
 </div>
 
-<!-- GRID.JS SCRIPT -->
+<!-- SCRIPT LIBRARY: PAPAPARSE UNTUK CSV & GRID.JS UNTUK TABEL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gridjs@6.0.6/dist/gridjs.umd.js"></script>
 
 <script>
 let currentGrid = null;
 
-/* KEMBALI KE HOME */
 function goHome() {
   const sidebar = document.getElementById("sidebar");
   if (window.innerWidth > 768) { sidebar.classList.remove("collapsed"); }
@@ -612,7 +595,6 @@ function goHome() {
   document.getElementById("actions").style.display = "none";
 }
 
-/* TOGGLE SIDEBAR */
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   if (window.innerWidth <= 768) { sidebar.classList.toggle("active"); }
@@ -623,8 +605,8 @@ function closeSidebarOnly() {
   document.getElementById("sidebar").classList.remove("active");
 }
 
-/* LOAD DATA MENGGUNAKAN GRID.JS & CSV API */
-function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = false) {
+/* FUNGSI UTAMA LOAD DATA DATA LOKAL FETCHING */
+async function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = false) {
   const sidebar = document.getElementById("sidebar");
 
   document.getElementById("welcome").style.display = "none"; 
@@ -650,60 +632,62 @@ function loadData(sourceUrl, editUrl, downloadUrl, element, isIframe = false) {
   document.getElementById("downloadExcel").href = downloadUrl;
 
   if (isIframe) {
-    // Jika untuk link luar seperti Vercel
     loading.style.display = "none";
     frame.src = sourceUrl;
     frame.style.display = "block";
     actions.style.display = "none";
   } else {
-    // Bersihkan tabel sebelumnya jika ada
     tableContainer.innerHTML = "";
 
     if (currentGrid) {
       currentGrid.destroy();
     }
 
-    // Render menggunakan Grid.js dari CSV Google Sheets
-    currentGrid = new gridjs.Grid({
-      server: {
-        url: sourceUrl,
-        then: data => {
-          let rows = data.split('\n').map(row => {
-            // Parser sederhana CSV untuk mengatasi koma di dalam tanda kutip
-            let re = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-            return row.split(re).map(val => val.replace(/^"|"$/g, '').trim());
-          });
-          // Ambil baris pertama sebagai header, sisanya data
-          let headers = rows[0];
-          let body = rows.slice(1).filter(r => r.length > 1 && r[0] !== "");
-          return {
-            data: body
-          };
-        },
-        handle: res => {
+    try {
+      // Ambil data CSV mentah
+      const response = await fetch(sourceUrl);
+      if (!response.ok) throw new Error("Gagal mengambil file CSV.");
+      const csvText = await response.text();
+
+      // Parsing CSV menggunakan PapaParse
+      Papa.parse(csvText, {
+        skipEmptyLines: true,
+        complete: function(results) {
+          const parsedData = results.data;
+
+          if (!parsedData || parsedData.length === 0) {
+            alert("Data spreadsheet kosong!");
+            loading.style.display = "none";
+            return;
+          }
+
+          const headers = parsedData[0]; // Baris pertama sebagai Header
+          const bodyData = parsedData.slice(1); // Sisanya sebagai Baris Data
+
+          // Render Grid.js dengan Data Lokal
+          currentGrid = new gridjs.Grid({
+            columns: headers,
+            data: bodyData,
+            search: { placeholder: '🔍 Cari data di tabel...' },
+            pagination: { limit: 25, summary: true },
+            sort: true,
+            resizable: true,
+            style: { table: { 'font-size': '13px', 'white-space': 'nowrap' } }
+          }).render(tableContainer);
+
           loading.style.display = "none";
           tableContainer.style.display = "block";
-          if(editUrl !== '#') actions.style.display = "flex";
-          return res;
+          if (editUrl !== '#') actions.style.display = "flex";
         }
-      },
-      search: {
-        placeholder: '🔍 Cari data di tabel...'
-      },
-      pagination: {
-        limit: 20,
-        summary: true
-      },
-      sort: true,
-      resizable: true,
-      style: {
-        table: { 'font-size': '13px', 'white-space': 'nowrap' }
-      }
-    }).render(tableContainer);
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Error saat memuat data: " + err.message);
+      loading.style.display = "none";
+    }
   }
 }
 
-/* GAME HUB */
 function showGameHub(element){
   const sidebar = document.getElementById("sidebar");
   document.querySelectorAll(".menu-item").forEach(item=>item.classList.remove("active"));
@@ -744,7 +728,6 @@ function load2048(){ document.getElementById("gameArea").innerHTML=`<iframe src=
 function loadFlappy(){ document.getElementById("gameArea").innerHTML=`<iframe src="https://funhtml5games.com/?play=flappy" style="width:100%;height:100%;border:none;display:block;"></iframe>`; }
 function loadChess(){ document.getElementById("gameArea").innerHTML=`<iframe src="https://cdn.htmlgames.com/Chess/" style="width:100%;height:100%;border:none;display:block;"></iframe>`; }
 
-/* SEARCH SIDEBAR */
 function filterMenu(){
   let input = document.getElementById("searchInput").value.toLowerCase();
   let items = document.querySelectorAll(".menu-item");
@@ -754,7 +737,6 @@ function filterMenu(){
   });
 }
 
-/* CLOCK */
 function updateClock(){
   const now = new Date();
   document.getElementById("clock").innerHTML = now.toLocaleTimeString();
@@ -763,7 +745,6 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-/* DARK MODE */
 function toggleDarkMode(){
   document.body.classList.toggle("dark");
   const btn = document.getElementById("darkToggle");
@@ -782,7 +763,6 @@ if(localStorage.getItem("theme")==="dark"){
 }
 </script>
 
-<!-- BUTTERFLY ANIMATION -->
 <img id="butterfly" class="butterfly" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHM1cW9pemY5eG5nYndiNnBpeGJvMjFzM2c0OTI4czRraHhqMzBqNiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/j1ODNPrvSVeyThBe3b/giphy.webp">
 
 <script>
